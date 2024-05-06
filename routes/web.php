@@ -6,6 +6,7 @@ use App\Http\Controllers\ManagerController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LevelController;
 use App\Http\Controllers\BarangController;
+use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\PenjualanController;
 use App\Http\Controllers\StokController;
 use App\Http\Controllers\POSController;
@@ -124,9 +125,9 @@ Route::group(['prefix' => 'penjualan'], function () {
 
 Route::get('login', [AuthController::class, 'index'])->name('login');
 Route::get('register', [AuthController::class, 'register'])->name('register');
-Route::post('proses_login', [AuthController:: class, 'proses_login'])->name('proses_login');
+Route::post('proses_login', [AuthController::class, 'proses_login'])->name('proses_login');
 Route::get('logout', [AuthController::class, 'logout'])->name('logout');
-Route::post('proses_register', [AuthController:: class, 'proses_register'])->name('proses_register');
+Route::post('proses_register', [AuthController::class, 'proses_register'])->name('proses_register');
 
 // kita atur juga untuk middleware menggunakan group pada routing
 // didalamnya terdapat group untuk mengecek kondisi login
@@ -135,11 +136,17 @@ Route::post('proses_register', [AuthController:: class, 'proses_register'])->nam
 Route::group(['middleware' => ['auth']], function () {
 
     Route::group(['middleware' => ['cek_login:1']], function () {
-        Route::resource('admin', AdminController :: class);
+        Route::resource('admin', AdminController::class);
     });
     Route::group(['middleware' => ['cek_login:2']], function () {
-        Route::resource('manager', ManagerController :: class);
+        Route::resource('manager', ManagerController::class);
     });
 });
 
+Route::get('/file-upload', [FileUploadController::class, 'fileUpload']);
+Route::post('/file-upload', [FileUploadController::class, 'prosesfileUpload']);
 
+use App\Http\Controllers\FileUploadRenameController;
+
+Route::get('/file-upload-rename', [FileUploadRenameController::class, 'fileUpload'])->name('file.upload');
+Route::post('/file-upload-rename', [FileUploadRenameController::class, 'prosesFileUploadRename'])->name('file.upload.post');
