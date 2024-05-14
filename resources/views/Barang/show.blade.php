@@ -38,6 +38,16 @@
                         <th>Harga Jual</th>
                         <td>{{$barang->harga_jual}}</td>
                     </tr>
+                    <tr>
+                        <th>Gambar</th>
+                        <td>
+                            @if($barang->image)
+                                <img src="{{ asset('storage/'.$barang->image) }}"class="img-thumbnail" style="max-width: 200px;">
+                            @else
+                                <p>Gambar tidak tersedia</p>
+                            @endif
+                        </td>
+                    </tr>
                 </table>
             @endempty
             <a href="{{url('barang')}}" class="btn btn-sm btn-default mt-2">Kembali</a>

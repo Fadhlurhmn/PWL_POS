@@ -14,7 +14,7 @@
                 </div>
                 <a href="{{url('barang')}}" class="btn btn-sm btn-default mt-2">Kembali</a>
             @else
-                <form action="{{url('/barang/'.$barang->barang_id)}}" method="POST" class="form-horizontal">
+                <form action="{{url('/barang/'.$barang->barang_id)}}" method="POST" class="form-horizontal" enctype="multipart/form-data">
                     @csrf
                     {!! method_field('PUT') !!} <!-- untuk proses edit yang butuh method PUT -->
                     <div class="form-group row">
@@ -65,6 +65,18 @@
                             @error('harga_beli')
                                 <small class="form-text text-danger">{{$message}}</small>
                             @enderror
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-1 control-label col-form-label">Gambar</label>
+                        <div class="col-11">
+                            <input type="file" class="form-control" id="image" name="image">
+                            @error('image')
+                                <small class="form-text text-danger">{{$message}}</small>
+                            @enderror
+                            @if($barang->image)
+                            <img src="{{ asset('storage/'.$barang->image) }}"class="img-thumbnail" style="max-width: 200px;">
+                            @endif
                         </div>
                     </div>
                     <div class="form-group row">

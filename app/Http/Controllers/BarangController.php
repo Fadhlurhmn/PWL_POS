@@ -8,6 +8,8 @@ use App\Models\m_user;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Facades\Storage;
+
 
 class BarangController extends Controller
 {
@@ -62,23 +64,33 @@ class BarangController extends Controller
     }
     public function store(Request $request): RedirectResponse
     {
+        // Validasi data yang diterima
         $validated = $request->validate([
             'barang_kode' => 'bail|required|string|unique:m_barang,barang_kode',
             'barang_nama' => 'required|string|max:100',
             'kategori_id' => 'required|integer',
             'harga_beli' => 'required|integer',
             'harga_jual' => 'required|integer',
-        ]);
-        m_barang::create([
-            'barang_kode' => $request->barang_kode,
-            'barang_nama' => $request->barang_nama,
-            'kategori_id' => $request->kategori_id,
-            'harga_beli' => $request->harga_beli,
-            'harga_jual' => $request->harga_jual,
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
         ]);
 
+        // Simpan gambar dan dapatkan jalur penyimpanannya
+        $path = $request->file('image')->store('foto_barang', 'public');
+
+        // Buat entri baru di database
+        m_barang::create([
+            'barang_kode' => $validated['barang_kode'],
+            'barang_nama' => $validated['barang_nama'],
+            'kategori_id' => $validated['kategori_id'],
+            'harga_beli' => $validated['harga_beli'],
+            'harga_jual' => $validated['harga_jual'],
+            'image' => $path // Simpan jalur ke gambar
+        ]);
+
+        // Redirect dengan pesan sukses
         return redirect('/barang')->with('success', 'Data barang berhasil disimpan');
     }
+
     public function show(string $id)
     {
         $barang = m_barang::find($id);
@@ -112,26 +124,37 @@ class BarangController extends Controller
 
         return view('barang.edit', ['breadcrumb' => $breadcrumb, 'page' => $page, 'activeMenu' => $activeMenu, 'barang' => $barang, 'kategori' => $kategori]);
     }
-    public function update(Request $request, string $id)
+    public function update(Request $request, string $id): RedirectResponse
     {
-        $request->validate([
+        // Validasi data yang diterima
+        $validated = $request->validate([
             'barang_kode' => 'bail|required|string|unique:m_barang,barang_kode,' . $id . ',barang_id',
             'barang_nama' => 'required|string|max:100',
             'kategori_id' => 'required|integer',
             'harga_beli' => 'required|integer',
             'harga_jual' => 'required|integer',
+            'image' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
         ]);
 
-        m_barang::find($id)->update([
-            'barang_kode' => $request->barang_kode,
-            'barang_nama' => $request->barang_nama,
-            'kategori_id' => $request->kategori_id,
-            'harga_beli' => $request->harga_beli,
-            'harga_jual' => $request->harga_jual,
-        ]);
+        $barang = m_barang::findOrFail($id);
 
+        if ($request->hasFile('image')) {
+            // Hapus gambar lama jika ada
+            if ($barang->image) {
+                Storage::disk('public')->delete($barang->image);
+            }
+            // Simpan gambar baru dan dapatkan jalur penyimpanannya
+            $path = $request->file('image')->store('foto_barang', 'public');
+            $validated['image'] = $path; // Tambahkan jalur gambar baru ke validasi data
+        }
+
+        // Perbarui entri di database
+        $barang->update($validated);
+
+        // Redirect dengan pesan sukses
         return redirect('/barang')->with('success', 'Data barang berhasil diubah');
     }
+
     public function destroy(string $id)
     {
         $check = m_barang::find($id);
